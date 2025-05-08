@@ -8,8 +8,8 @@ class LightControlApp:
         self.root = root
         self.root.title("Хөдөлгөөнөөр асдаг автомат гэрэл")
         self.light_on = False
-        self.lagst_motion_time = None
-        self.timeout = 15  # 5 seconds for quick testing
+        self.last_motion_time = None
+        self.timeout = 15  # Default timeout in seconds
 
         # Load house plan image
         self.house_image = Image.open("zurag2.png")  # Replace with your house plan image file
@@ -30,6 +30,24 @@ class LightControlApp:
         self.countdown_label = tk.Label(root, text="", font=("Arial", 14))
         self.countdown_label.pack(pady=5)
 
+        # Add buttons for manual control
+        self.manual_on_button = tk.Button(root, text="Гэрэл асаах", command=self.turn_on_light, font=("Arial", 14))
+        self.manual_on_button.pack(pady=5)
+
+        self.manual_off_button = tk.Button(root, text="Гэрэл унтраах", command=self.turn_off_light, font=("Arial", 14))
+        self.manual_off_button.pack(pady=5)
+
+        # Add input field to change timeout duration
+        self.timeout_label = tk.Label(root, text="Гэрэл унтрах хугацаа (сек):", font=("Arial", 14))
+        self.timeout_label.pack(pady=5)
+
+        self.timeout_entry = tk.Entry(root, font=("Arial", 14))
+        self.timeout_entry.pack(pady=5)
+        self.timeout_entry.insert(0, str(self.timeout))  # Set default timeout value
+
+        self.set_timeout_button = tk.Button(root, text="Хугацааг тохируулах", command=self.set_timeout, font=("Arial", 14))
+        self.set_timeout_button.pack(pady=5)
+
         self.motion_button = tk.Button(root, text="Хөдөлгөөн", command=self.simulate_motion, font=("Arial", 14))
         self.motion_button.pack(pady=5)
 
@@ -47,6 +65,29 @@ class LightControlApp:
             self.status_label.config(text="[АСААЛТТАЙ] Хөдөлгөөн илэрлээ! Гэрэл аслаа.")
             self.canvas.itemconfig(self.light_indicator, fill="green", outline="green")  # Turn on the light
         self.last_motion_time = time.time()
+
+    def turn_on_light(self):
+        self.light_on = True
+        self.status_label.config(text="[АСААЛТТАЙ] Гэрэл гар удирдлагаар аслаа.")
+        self.canvas.itemconfig(self.light_indicator, fill="green", outline="green")  # Turn on the light
+        self.last_motion_time = None  # Disable auto-off temporarily
+
+    def turn_off_light(self):
+        self.light_on = False
+        self.status_label.config(text="[УНТРААЛТТАЙ] Гэрэл гар удирдлагаар унтарлаа.")
+        self.canvas.itemconfig(self.light_indicator, fill="gray", outline="gray")  # Turn off the light
+        self.last_motion_time = None  # Disable auto-off temporarily
+
+    def set_timeout(self):
+        try:
+            new_timeout = int(self.timeout_entry.get())
+            if new_timeout > 0:
+                self.timeout = new_timeout
+                self.status_label.config(text=f"[ТОХИРУУЛСАН] Гэрэл унтрах хугацаа {self.timeout} секунд.")
+            else:
+                self.status_label.config(text="[АЛДАА] Хугацаа 0-ээс их байх ёстой!")
+        except ValueError:
+            self.status_label.config(text="[АЛДАА] Зөвхөн тоо оруулна уу!")
 
     def exit_program(self):
         self.running = False
